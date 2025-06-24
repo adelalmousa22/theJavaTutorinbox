@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaTutor Admin - Student Inquiries</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2a5298;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .filter-select {
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .clear-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .inquiries-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .inquiry-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+            border: 1px solid #e0e8ff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inquiry-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(79, 70, 229, 0.15);
+        }
+
+        .inquiry-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        .inquiry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .student-info h3 {
+            color: #2d3748;
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .student-email {
+            color: #4f46e5;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .inquiry-meta {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .timestamp {
+            background: #4f46e5;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e8ff;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .contact-icon {
+            font-size: 1.1rem;
+            color: #4f46e5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-contact {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-contact:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-call {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-call:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .refresh-indicator {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                min-width: auto;
+            }
+
+            .inquiry-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .inquiry-meta {
+                text-align: left;
+            }
+
+            .contact-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>☕ JavaTutor Admin Dashboard</h1>
+            <p>Manage student inquiries and tutoring requests</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalInquiries">0</div>
+                <div class="stat-label">Total Inquiries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayInquiries">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="weekInquiries">0</div>
+                <div class="stat-label">This Week</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search by name or email...">
+                <select class="filter-select" id="contactFilter">
+                    <option value="">All Contact Methods</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone</option>
+                    <option value="text">Text</option>
+                </select>
+            </div>
+            <button class="clear-btn" id="clearAllBtn">Clear All</button>
+            <div class="auto-refresh">
+                <div class="refresh-indicator"></div>
+                Auto-refresh active
+            </div>
+        </div>
+
+        <!-- Inquiries -->
+        <div class="inquiries-container">
+            <div id="inquiriesList">
+                <!-- Inquiries will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        New inquiry received!
+    </div>
+
+    <script>
+        // Global state
+        let inquiries = [];
+        let filteredInquiries = [];
+
+        // Initialize the admin dashboard
+        function initializeAdmin() {
+            console.log('Initializing JavaTutor Admin Dashboard...');
+            
+            // Load existing inquiries
+            loadInquiries();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Start listening for new inquiries
+            startInquiryListener();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(checkForNewInquiries, 30000);
+            
+            console.log('Admin dashboard initialized successfully!');
+        }
+
+        // Load inquiries from storage
+        function loadInquiries() {
+            const stored = JSON.parse(localStorage.getItem('javaTutorInquiries') || '[]');
+            inquiries = stored;
+            filteredInquiries = [...inquiries];
+            renderInquiries();
+            updateStats();
+        }
+
+        // Save inquiries to storage
+        function saveInquiries() {
+            localStorage.setItem('javaTutorInquiries', JSON.stringify(inquiries));
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            const contactFilter = document.getElementById('contactFilter');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+
+            searchInput.addEventListener('input', filterInquiries);
+            contactFilter.addEventListener('change', filterInquiries);
+            clearAllBtn.addEventListener('click', clearAllInquiries);
+        }
+
+        // Start listening for new inquiries
+        function startInquiryListener() {
+            // Listen for storage changes (from the main site)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'javaTutorInquiries') {
+                    loadInquiries();
+                    showNotification('New inquiry received!');
+                }
+            });
+
+            // Also check for new inquiries in the same tab
+            window.addEventListener('message', function(e) {
+                if (e.data.type === 'NEW_INQUIRY') {
+                    addInquiry(e.data.inquiry);
+                    showNotification('New inquiry received!');
+                }
+            });
+        }
+
+        // Add new inquiry
+        function addInquiry(inquiryData) {
+            const inquiry = {
+                id: Date.now() + Math.random(),
+                ...inquiryData,
+                timestamp: new Date().toISOString()
+            };
+            
+            inquiries.unshift(inquiry);
+            saveInquiries();
+            loadInquiries();
+        }
+
+        // Filter inquiries
+        function filterInquiries() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const contactMethod = document.getElementById('contactFilter').value;
+
+            filteredInquiries = inquiries.filter(inquiry => {
+                const matchesSearch = inquiry.name.toLowerCase().includes(searchTerm) || 
+                                    inquiry.email.toLowerCase().includes(searchTerm);
+                const matchesMethod = !contactMethod || inquiry.contactMethod === contactMethod;
+                
+                return matchesSearch && matchesMethod;
+            });
+
+            renderInquiries();
+        }
+
+        // Render inquiries
+        function renderInquiries() {
+            const container = document.getElementById('inquiriesList');
+            
+            if (filteredInquiries.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>No inquiries found</h3>
+                        <p>New student inquiries will appear here when submitted through the JavaTutor website.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredInquiries.map(inquiry => `
+                <div class="inquiry-card" data-id="${inquiry.id}">
+                    <div class="inquiry-header">
+                        <div class="student-info">
+                            <h3>${inquiry.name}</h3>
+                            <div class="student-email">${inquiry.email}</div>
+                        </div>
+                        <div class="inquiry-meta">
+                            <div class="timestamp">${formatTimestamp(inquiry.timestamp)}</div>
+                            <div>ID: ${inquiry.id.toString().slice(-6)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <span class="contact-icon">📞</span>
+                            <span>${inquiry.phone}</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">💬</span>
+                            <span>Prefers ${inquiry.contactMethod}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <a href="mailto:${inquiry.email}" class="action-btn btn-contact">
+                            ✉️ Email
+                        </a>
+                        <a href="tel:${inquiry.phone}" class="action-btn btn-call">
+                            📞 Call
+                        </a>
+                        <button class="action-btn btn-delete" onclick="deleteInquiry('${inquiry.id}')">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Format timestamp
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            const todayCount = inquiries.filter(inquiry => 
+                new Date(inquiry.timestamp) >= today
+            ).length;
+
+            const weekCount = inquiries.filter(inquiry => 
+                new Date(inquiry.timestamp) >= weekAgo
+            ).length;
+
+            document.getElementById('totalInquiries').textContent = inquiries.length;
+            document.getElementById('todayInquiries').textContent = todayCount;
+            document.getElementById('weekInquiries').textContent = weekCount;
+        }
+
+        // Delete inquiry
+        function deleteInquiry(id) {
+            if (confirm('Are you sure you want to delete this inquiry?')) {
+                inquiries = inquiries.filter(inquiry => inquiry.id.toString() !== id.toString());
+                saveInquiries();
+                loadInquiries();
+                showNotification('Inquiry deleted successfully');
+            }
+        }
+
+        // Clear all inquiries
+        function clearAllInquiries() {
+            if (confirm('Are you sure you want to delete ALL inquiries? This cannot be undone.')) {
+                inquiries = [];
+                saveInquiries();
+                loadInquiries();
+                showNotification('All inquiries cleared');
+            }
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Check for new inquiries (polling)
+        function checkForNewInquiries() {
+            const stored = JSON.parse(localStorage.getItem('javaTutorInquiries') || '[]');
+            if (stored.length > inquiries.length) {
+                loadInquiries();
+                showNotification('New inquiry received!');
+            }
+        }
+
+        // Add some demo data for testing
+        function addDemoData() {
+            const demoInquiries = [
+                {
+                    id: Date.now() + 1,
+                    name: 'Sarah Johnson',
+                    email: 'sarah.johnson@email.com',
+                    phone: '(555) 123-4567',
+                    contactMethod: 'email',
+                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+                },
+                {
+                    id: Date.now() + 2,
+                    name: 'Mike Chen',
+                    email: 'mike.chen@student.edu',
+                    phone: '(555) 987-6543',
+                    contactMethod: 'phone',
+                    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+                },
+                {
+                    id: Date.now() + 3,
+                    name: 'Emily Rodriguez',
+                    email: 'emily.r@gmail.com',
+                    phone: '(555) 456-7890',
+                    contactMethod: 'text',
+                    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+                }
+            ];
+
+            // Only add demo data if no inquiries exist
+            if (inquiries.length === 0) {
+                inquiries = demoInquiries;
+                saveInquiries();
+                loadInquiries();
+            }
+        }
+
+        // Start everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAdmin();
+            // Uncomment the next line to add demo data for testing
+            // addDemoData();
+        });
+
+        // Export function for the main site to use
+        window.addJavaTutorInquiry = function(inquiryData) {
+            addInquiry(inquiryData);
+        };
+    </script>
+</body>
+</html>
